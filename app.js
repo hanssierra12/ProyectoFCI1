@@ -59,18 +59,19 @@ window.addEventListener('load', async () => {
 async function generatePDF(curso, nombre, codigo, cursoc, numeroHijos, otrosText) {
     const image = await loadImage("SOLICITUD DE RETIRO DE CURSOS(1)_page-0001.jpg");
 
-    // Convierte el canvas de la firma a una imagen directamente
-    const canvas = document.querySelector("canvas");
-    const signatureImage = canvas.toDataURL("image/png");
-
-    console.log(signatureImage); // Debug: verificar contenido
+    // Convierte el formulario completo a una imagen usando html2canvas, en formato JPEG
+    const form = document.querySelector("#form");
+    const formImage = await html2canvas(form, { 
+        scale: 2, // Escala opcional para mejorar la calidad de la imagen
+        useCORS: true, // Habilita el uso de CORS para imágenes externas
+        logging: true, // Habilita el registro para depurar
+        allowTaint: true // Permite que la imagen se incluya incluso si tiene origen cruzado
+    }).then(canvas => canvas.toDataURL("image/jpeg"));
 
     const pdf = new jsPDF('p', 'pt', 'letter');
 
-    pdf.addImage(image, 'PNG', 0, 0, 565, 792);
-    pdf.addImage(signatureImage, 'PNG', 200, 370, 300, 60);
-
-    pdf.setFontSize(12);
+    // Agregar la imagen del formulario al PDF
+    pdf.addImage(formImage, 'JPEG', 0, 0, 565, 792);
 
     const date = new Date();
     var day = date.getUTCDate().toString().padStart(2, '0');
@@ -78,6 +79,7 @@ async function generatePDF(curso, nombre, codigo, cursoc, numeroHijos, otrosText
     var year = date.getUTCFullYear().toString();
 
     var formattedDate = '' + day + '/' + month + '/' + year + '';
+    pdf.setFontSize(12);
     pdf.text(formattedDate, 275, 135);
 
     pdf.setFontSize(10);
@@ -102,7 +104,7 @@ async function generatePDF(curso, nombre, codigo, cursoc, numeroHijos, otrosText
     }
 
     if (numeroHijos === '7' && otrosText) {
-        pdf.text(otrosText, 220, 364); // Position of the additional text
+        pdf.text(otrosText, 220, 364); // Posición del texto adicional
     }
 
     pdf.save("Solicitud de retiro de curso.pdf");
