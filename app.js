@@ -57,55 +57,27 @@ window.addEventListener('load', async () => {
 });
 
 async function generatePDF(curso, nombre, codigo, cursoc, numeroHijos, otrosText) {
-    const image = await loadImage("SOLICITUD DE RETIRO DE CURSOS(1)_page-0001.jpg");
+    const pdf = new jsPDF();
 
-    // Convierte el formulario completo a una imagen usando html2canvas, en formato JPEG
-    const form = document.querySelector("#form");
-    const formImage = await html2canvas(form, { 
-        scale: 2, // Escala opcional para mejorar la calidad de la imagen
-        useCORS: true, // Habilita el uso de CORS para imágenes externas
-        logging: true, // Habilita el registro para depurar
-        allowTaint: true // Permite que la imagen se incluya incluso si tiene origen cruzado
-    }).then(canvas => canvas.toDataURL("image/jpeg"));
+    // Agregar imagen de fondo
+    const backgroundImage = await loadImage("REPORTE DE CORRECION DE CALIFICACION.jpg");
+    pdf.addImage(backgroundImage, 'JPEG', 0, 0, 565, 792);
 
-    const pdf = new jsPDF('p', 'pt', 'letter');
+    // Agregar firma
+    const signatureImage = signaturePad.toDataURL();
+    pdf.addImage(signatureImage, 'PNG', 200, 370, 300, 60);
 
-    // Agregar la imagen del formulario al PDF
-    pdf.addImage(formImage, 'JPEG', 0, 0, 565, 792);
-
-    const date = new Date();
-    var day = date.getUTCDate().toString().padStart(2, '0');
-    var month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-    var year = date.getUTCFullYear().toString();
-
-    var formattedDate = '' + day + '/' + month + '/' + year + '';
+    // Agregar texto y datos del formulario
     pdf.setFontSize(12);
-    pdf.text(formattedDate, 275, 135);
+    pdf.text(nombre, 250, 105);
+    pdf.text(codigo, 250, 90);
+    pdf.text(curso, 250, 75);
+    pdf.text(cursoc, 250, 135);
 
-    pdf.setFontSize(10);
-    pdf.text(nombre, 260, 105);
-    pdf.text(curso, 260, 75);
-    pdf.text(codigo, 275, 90);
-    pdf.text(cursoc, 170, 202);
+    // Ejemplo de agregar más contenido del formulario
+    // Asegúrate de ajustar las posiciones y tamaños según sea necesario
 
-    pdf.setFillColor(0, 0, 0);
-
-    const circles = {
-        1: 358,
-        2: 385,
-        3: 400,
-        4: 425,
-        5: 443,
-        6: 458,
-        7: 478
-    };
-    if (circles[numeroHijos]) {
-        pdf.circle(circles[numeroHijos], 202, 4, 'FD');
-    }
-
-    if (numeroHijos === '7' && otrosText) {
-        pdf.text(otrosText, 220, 364); // Posición del texto adicional
-    }
-
-    pdf.save("Solicitud de retiro de curso.pdf");
+    // Guardar el PDF con un nombre específico
+    pdf.save("Solicitud_de_retiro_de_curso.pdf");
 }
+
